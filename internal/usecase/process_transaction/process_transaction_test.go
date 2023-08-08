@@ -22,11 +22,12 @@ func TestProcessTransactionWhenItsValid(t *testing.T) {
 	}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	
 	repositoryMock := mock_entity.NewMockTransactionRepository(ctrl)
+
 	repositoryMock.EXPECT().Insert(input.ID, input.AccountID, input.Amount, "approved", "").Return(nil)
 
 	usecase := NewProcessTransaction(repositoryMock)
+
 	output, err := usecase.Execute(input)
 
 	assert.Nil(t, err)

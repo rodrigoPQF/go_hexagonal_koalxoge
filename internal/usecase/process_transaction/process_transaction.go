@@ -1,6 +1,8 @@
 package process_transaction
 
-import "github.com/rodrigoPQF/go_hexagonal_koalxoge/internal/entity"
+import (
+	"github.com/rodrigoPQF/go_hexagonal_koalxoge/internal/entity"
+)
 
 type ProcessTransaction struct {
 	Repository entity.TransactionRepository
@@ -22,6 +24,7 @@ func (p *ProcessTransaction) Execute(input TransactionDtoInput) (TransactionDtoO
 		if err != nil {
 			return TransactionDtoOutput{}, err
 		}
+
 		output := TransactionDtoOutput{
 			ID: transaction.ID,
 			Status: "rejected",
@@ -29,14 +32,17 @@ func (p *ProcessTransaction) Execute(input TransactionDtoInput) (TransactionDtoO
 		}
 		return output, nil
 	}
+
 	err := p.Repository.Insert(transaction.ID, transaction.AccountID, transaction.Amount, "approved", "")
 	if err != nil {
 		return TransactionDtoOutput{}, err
 	}
-	output := TransactionDtoOutput{
+
+	output2 := TransactionDtoOutput{
 		ID: transaction.ID,
 		Status: "approved",
-		ErrorMessage: invalidTransaction.Error(),
+		ErrorMessage: "",
 	}
-	return output, nil
+
+	return output2, nil
 }
