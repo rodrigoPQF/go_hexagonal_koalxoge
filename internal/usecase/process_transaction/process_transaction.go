@@ -20,24 +20,16 @@ func (p *ProcessTransaction) Execute(input TransactionDtoInput) (TransactionDtoO
 	invalidTransaction := transaction.IsValid()
 
 	if invalidTransaction != nil {
-		err := p.Repository.Insert(transaction.ID, transaction.AccountID, transaction.Amount, "rejected", invalidTransaction.Error())
-		if err != nil {
-			return TransactionDtoOutput{}, err
-		}
-
-		output := TransactionDtoOutput{
-			ID: transaction.ID,
-			Status: "rejected",
-			ErrorMessage: invalidTransaction.Error(),
-		}
-		return output, nil
+		return p.rejectedTransaction(transaction, invalidTransaction)
 	}
+	return p.approveTransaction(transaction)
+}
 
+func (p *ProcessTransaction) approveTransaction(transaction *entity.Transaction) (TransactionDtoOutput, error) {
 	err := p.Repository.Insert(transaction.ID, transaction.AccountID, transaction.Amount, "approved", "")
 	if err != nil {
 		return TransactionDtoOutput{}, err
 	}
-
 	output2 := TransactionDtoOutput{
 		ID: transaction.ID,
 		Status: "approved",
@@ -45,4 +37,17 @@ func (p *ProcessTransaction) Execute(input TransactionDtoInput) (TransactionDtoO
 	}
 
 	return output2, nil
+}
+
+func (p *ProcessTransaction) rejectedTransaction(transaction *entity.Transaction, invalidTransaction error) (TransactionDtoOutput, error) {
+	err := p.Repository.Insert(transaction.ID, transaction.AccountID, transaction.Amount, "rejected", invalidTransaction.Error())
+	if err != nil {
+		return TransactionDtoOutput{}, err
+	}
+	output := TransactionDtoOutput{
+		ID: transaction.ID,
+		Status: "rejected",
+		ErrorMessage: invalidTransaction.Error(),
+	}
+	return output, nil
 }
